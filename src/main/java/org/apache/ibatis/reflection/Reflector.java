@@ -46,17 +46,53 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
  */
 public class Reflector {
 
+  /**
+   * Class类型
+   */
   private final Class<?> type;
+  /**
+   * 可读属性的名称集合 -> 相应getter方法的属性，初始值为空数组
+   */
   private final String[] readablePropertyNames;
+  /**
+   * 可写属性的名称集合-> 相应setter方法的属性，初始值为空数组
+   */
   private final String[] writablePropertyNames;
+  /**
+   * 记录了属性相应的setter方法
+   * key:属性名称
+   * value:invoker对象,setter方法对应Method对象的封装
+   */
   private final Map<String, Invoker> setMethods = new HashMap<>();
+  /**
+   * 记录了属性相应的getter方法
+   * key:属性名称
+   * value:invoker对象
+   */
   private final Map<String, Invoker> getMethods = new HashMap<>();
+  /**
+   * 记录属性相应的setter方法的参数值类型
+   */
   private final Map<String, Class<?>> setTypes = new HashMap<>();
+  /**
+   * 记录了属性的getter方法的返回值类型
+   */
   private final Map<String, Class<?>> getTypes = new HashMap<>();
+  /**
+   * 记录了默认构造方法
+   */
   private Constructor<?> defaultConstructor;
 
+  /**
+   * 记录了所有属性名称的集合
+   */
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
+  /**
+   * 解析指定的Class对象，并填充进集合容器
+   *
+   * @param clazz
+   */
   public Reflector(Class<?> clazz) {
     type = clazz;
     addDefaultConstructor(clazz);
@@ -82,8 +118,14 @@ public class Reflector {
     }
   }
 
+  /**
+   * 解析getter方法
+   *
+   * @param cls
+   */
   private void addGetMethods(Class<?> cls) {
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
+    //获取当前类以及其父类中定义的所有方法的唯一签名以及相应的Method对象
     Method[] methods = getClassMethods(cls);
     for (Method method : methods) {
       if (method.getParameterTypes().length > 0) {
@@ -96,6 +138,7 @@ public class Reflector {
         addMethodConflict(conflictingGetters, name, method);
       }
     }
+    //对覆写的情况做处理
     resolveGetterConflicts(conflictingGetters);
   }
 
@@ -292,30 +335,43 @@ public class Reflector {
     Map<String, Method> uniqueMethods = new HashMap<>();
     Class<?> currentClass = cls;
     while (currentClass != null && currentClass != Object.class) {
+      //记录currentClass的所有方法
       addUniqueMethods(uniqueMethods, currentClass.getDeclaredMethods());
 
       // we also need to look for interface methods -
       // because the class may be abstract
+      //记录接口中定义的方法
       Class<?>[] interfaces = currentClass.getInterfaces();
       for (Class<?> anInterface : interfaces) {
         addUniqueMethods(uniqueMethods, anInterface.getMethods());
       }
 
+      //获取父类 继续循环
       currentClass = currentClass.getSuperclass();
     }
 
     Collection<Method> methods = uniqueMethods.values();
-
+    //转化Methods数组返回
     return methods.toArray(new Method[methods.size()]);
   }
 
+    /**
+     * 为每个方法生成唯一签名，并记录到uniqueMethods集合中
+     *
+     * @param uniqueMethods
+     * @param methods
+     */
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
       if (!currentMethod.isBridge()) {
+          //方法签名格式：返回值类型#方法名称:参数类型列表
+          //例如org.apache.ibatis.reflection.Reflector.getSignature方法的
+          //    全局唯一签名:java.lang.String#getSignature:java.lang.reflect.Method
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
         // if it is known, then an extended class must have
         // overridden a method
+          //检查子类是否已覆盖该方法，如果已经添加过，则表示子类覆盖了其方法，无需再向uniqueMethods集合添加该方法
         if (!uniqueMethods.containsKey(signature)) {
           uniqueMethods.put(signature, currentMethod);
         }
