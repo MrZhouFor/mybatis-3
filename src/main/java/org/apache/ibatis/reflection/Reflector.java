@@ -124,9 +124,11 @@ public class Reflector {
    * @param cls
    */
   private void addGetMethods(Class<?> cls) {
+    //key:属性名称 value:getter方法集合,因为子类可能会覆盖父类方法，所以同一属性名称会存在多个getter方法
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
     //获取当前类以及其父类中定义的所有方法的唯一签名以及相应的Method对象
     Method[] methods = getClassMethods(cls);
+    //按照JavaBean规范查找getter方法，并记录到conflictingGetters中
     for (Method method : methods) {
       if (method.getParameterTypes().length > 0) {
         continue;
@@ -151,6 +153,7 @@ public class Reflector {
           winner = candidate;
           continue;
         }
+        //记录返回值类型
         Class<?> winnerType = winner.getReturnType();
         Class<?> candidateType = candidate.getReturnType();
         if (candidateType.equals(winnerType)) {
@@ -177,7 +180,14 @@ public class Reflector {
     }
   }
 
+  /**
+   * 填充getMethods和getTypes
+   *
+   * @param name
+   * @param method
+   */
   private void addGetMethod(String name, Method method) {
+    //检测属性是否合法
     if (isValidPropertyName(name)) {
       getMethods.put(name, new MethodInvoker(method));
       Type returnType = TypeParameterResolver.resolveReturnType(method, type);
@@ -282,6 +292,7 @@ public class Reflector {
   }
 
   private void addFields(Class<?> clazz) {
+    //获取Clazz中的所有字段
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
       if (!setMethods.containsKey(field.getName())) {
@@ -289,15 +300,20 @@ public class Reflector {
         // modification of final fields through reflection (JSR-133). (JGB)
         // pr #16 - final static can only be set by the classloader
         int modifiers = field.getModifiers();
+        //过滤掉final和static修饰的字段
         if (!(Modifier.isFinal(modifiers) && Modifier.isStatic(modifiers))) {
+          //填充setMethods和setTypes集合
           addSetField(field);
         }
       }
+      //当getMethods不包含同名属性时
       if (!getMethods.containsKey(field.getName())) {
+        //填充getMethods和getTypes集合
         addGetField(field);
       }
     }
     if (clazz.getSuperclass() != null) {
+      //处理父类中定义的字段
       addFields(clazz.getSuperclass());
     }
   }
