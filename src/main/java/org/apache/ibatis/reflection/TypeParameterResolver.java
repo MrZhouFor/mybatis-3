@@ -35,8 +35,11 @@ public class TypeParameterResolver {
    *         they will be resolved to the actual runtime {@link Type}s.
    */
   public static Type resolveFieldType(Field field, Type srcType) {
+    //解析字段的声明类型
     Type fieldType = field.getGenericType();
+    //获取字段所在类的Class对象
     Class<?> declaringClass = field.getDeclaringClass();
+    //调用resolveType()方法进行后续处理
     return resolveType(fieldType, srcType, declaringClass);
   }
 
@@ -66,10 +69,13 @@ public class TypeParameterResolver {
 
   private static Type resolveType(Type type, Type srcType, Class<?> declaringClass) {
     if (type instanceof TypeVariable) {
+        //解析TypeVariabe 类型
       return resolveTypeVar((TypeVariable<?>) type, srcType, declaringClass);
     } else if (type instanceof ParameterizedType) {
+        //解析ParameterizedType 类型
       return resolveParameterizedType((ParameterizedType) type, srcType, declaringClass);
     } else if (type instanceof GenericArrayType) {
+        //解析GenericArrayType 类型
       return resolveGenericArrayType((GenericArrayType) type, srcType, declaringClass);
     } else {
       return type;
@@ -137,8 +143,10 @@ public class TypeParameterResolver {
     Type result;
     Class<?> clazz;
     if (srcType instanceof Class) {
+        //Class 类型
       clazz = (Class<?>) srcType;
     } else if (srcType instanceof ParameterizedType) {
+        //ParameterizedType 类型
       ParameterizedType parameterizedType = (ParameterizedType) srcType;
       clazz = (Class<?>) parameterizedType.getRawType();
     } else {

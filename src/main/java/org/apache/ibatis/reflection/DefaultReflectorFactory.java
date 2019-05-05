@@ -19,7 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DefaultReflectorFactory implements ReflectorFactory {
+  //是否开启对Reflector对象的缓存
   private boolean classCacheEnabled = true;
+
+  //对Reflector对象的缓存
   private final ConcurrentMap<Class<?>, Reflector> reflectorMap = new ConcurrentHashMap<>();
 
   public DefaultReflectorFactory() {
