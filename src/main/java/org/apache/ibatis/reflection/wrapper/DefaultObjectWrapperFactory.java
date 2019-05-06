@@ -19,6 +19,8 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.ReflectionException;
 
 /**
+ * 该实现实际不可用，我们可以再mybatis-config.xml中配置自定义的ObjectWrapperFactory实现类进行扩展
+ *
  * @author Clinton Begin
  */
 public class DefaultObjectWrapperFactory implements ObjectWrapperFactory {
