@@ -208,6 +208,12 @@ public final class TypeHandlerRegistry {
         return javaTypeReference != null && getTypeHandler(javaTypeReference, jdbcType) != null;
     }
 
+    /**
+     * 根据指定的TypeHandler类型。从集合中查找typeHandler对象
+     *
+     * @param handlerType
+     * @return
+     */
     public TypeHandler<?> getMappingTypeHandler(Class<? extends TypeHandler<?>> handlerType) {
         return allTypeHandlersMap.get(handlerType);
     }
@@ -254,12 +260,15 @@ public final class TypeHandlerRegistry {
     }
 
     private Map<JdbcType, TypeHandler<?>> getJdbcHandlerMap(Type type) {
+        //查找指定Java类型对应的TypeHandler集合
         Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = typeHandlerMap.get(type);
+        //判断是否为空集合标志
         if (NULL_TYPE_HANDLER_MAP.equals(jdbcHandlerMap)) {
             return null;
         }
         if (jdbcHandlerMap == null && type instanceof Class) {
             Class<?> clazz = (Class<?>) type;
+            //判断是否枚举
             if (Enum.class.isAssignableFrom(clazz)) {
                 Class<?> enumClass = clazz.isAnonymousClass() ? clazz.getSuperclass() : clazz;
                 jdbcHandlerMap = getJdbcHandlerMapForEnumInterfaces(enumClass, enumClass);
