@@ -28,6 +28,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 虚拟文件系统
  * Provides a very simple API for accessing resources within an application server.
  *
  * @author Ben Gunter
@@ -35,6 +36,9 @@ import org.apache.ibatis.logging.LogFactory;
 public abstract class VFS {
   private static final Log log = LogFactory.getLog(VFS.class);
 
+  /**
+   * 记录实现类
+   */
   /** The built-in implementations. */
   public static final Class<?>[] IMPLEMENTATIONS = { JBoss6VFS.class, DefaultVFS.class };
 
@@ -43,6 +47,7 @@ public abstract class VFS {
 
   /** Singleton instance holder. */
   private static class VFSHolder {
+    //全局唯一的VFS对象，静态内部类单例
     static final VFS INSTANCE = createVFS();
 
     @SuppressWarnings("unchecked")
@@ -79,6 +84,8 @@ public abstract class VFS {
   }
 
   /**
+   * 静态内部类单例
+   *
    * Get the singleton {@link VFS} instance. If no {@link VFS} implementation can be found for the
    * current environment, then this method returns null.
    */
@@ -171,12 +178,15 @@ public abstract class VFS {
     return Collections.list(Thread.currentThread().getContextClassLoader().getResources(path));
   }
 
-  /** Return true if the {@link VFS} implementation is valid for the current environment. */
+  /** Return true if the {@link VFS} implementation is valid for the current environment.
+   * 负责监测当前环境是否依然有效
+   * */
   public abstract boolean isValid();
 
   /**
    * Recursively list the full resource path of all the resources that are children of the
    * resource identified by a URL.
+   * 负责查找指定的资源列表
    *
    * @param url The URL that identifies the resource to list.
    * @param forPath The path to the resource that is identified by the URL. Generally, this is the

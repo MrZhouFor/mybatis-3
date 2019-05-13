@@ -25,11 +25,18 @@ import java.net.URL;
  */
 public class ClassLoaderWrapper {
 
+  /**
+   * 应用指定的默认类加载器
+   */
   ClassLoader defaultClassLoader;
+  /**
+   * system classloader
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
     try {
+      //init systemClassLoader
       systemClassLoader = ClassLoader.getSystemClassLoader();
     } catch (SecurityException ignored) {
       // AccessControlException on Google App Engine
@@ -138,11 +145,11 @@ public class ClassLoaderWrapper {
   URL getResourceAsURL(String resource, ClassLoader[] classLoader) {
 
     URL url;
-
+    //遍历类加载器
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
-
+        //查找指定的资源
         // look for the resource as passed in...
         url = cl.getResource(resource);
 
@@ -203,10 +210,15 @@ public class ClassLoaderWrapper {
 
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
+            //参数指定的类加载器
         classLoader,
+            //系统指定的类加载器
         defaultClassLoader,
+            //当前线程绑定的类下载器
         Thread.currentThread().getContextClassLoader(),
+            //加载当前类所使用的类加载器
         getClass().getClassLoader(),
+            // system classLoader
         systemClassLoader};
   }
 
