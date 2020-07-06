@@ -18,24 +18,43 @@ package org.apache.ibatis.reflection.property;
 import java.util.Iterator;
 
 /**
+ * 实现Iterator接口 可以迭代处理嵌套的多层表达式，例如 'orders[0].items[0].name'
+ *
  * @author Clinton Begin
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+  /**
+   * indexedName中 从0到'['位置的字符串
+   */
   private String name;
+  /**
+   * 第一个.之前的字符串
+   */
   private final String indexedName;
+  /**
+   * indexedName中下标数字，'['和']'之间的数字字符
+   */
   private String index;
+  /**
+   * 第一个.之后的字符串
+   */
   private final String children;
 
   public PropertyTokenizer(String fullname) {
+    //查找 "." 的位置
     int delim = fullname.indexOf('.');
     if (delim > -1) {
+      //name 初始化
       name = fullname.substring(0, delim);
+      //children 初始化
       children = fullname.substring(delim + 1);
     } else {
       name = fullname;
       children = null;
     }
+    //设置 indexedName
     indexedName = name;
+    // '['的位置
     delim = name.indexOf('[');
     if (delim > -1) {
       index = name.substring(delim + 1, name.length() - 1);
